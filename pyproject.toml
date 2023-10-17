@@ -1,0 +1,50 @@
+[tool.poetry]
+name = "ubend_pl"
+version = "1.0"
+description = ""
+authors = ["Danil Muranov <danil5678444@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+click = "^8.1.3"
+pandas = "^2.0.2"
+scikit-learn = "^1.2.0"
+matplotlib = "^3.7.1"
+seaborn = "^0.12.2"
+hydra-core = "^1.3.2"
+pytest = "^7.4.0"
+torch = {version = "*", source = "torch_cpu"}
+torchvision = {version = "*", source = "torch_cpu"}
+torchaudio = {version = "*", source = "torch_cpu"}
+
+[[tool.poetry.source]]
+name = "torch_cpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "supplemental"
+
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "primary"
+
+[tool.poetry.scripts]
+ubend_pl = "ubend_pl.app:run"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 80
+include = '\.pyi?$'
+exclude = '''
+/(
+	\.git
+| \.hg
+| \.mypy_cache
+| \.tox
+| \.venv
+| _build
+| buck-out
+| build   
+)/ 
+'''
