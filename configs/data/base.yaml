@@ -1,0 +1,10 @@
+normalize_data:
+  data_input_path: "data/raw/ubend.pressureloss.csv"
+  target_column: "pt_loss"
+  data_output_path: "data/raw/normalized_data.csv"
+split_data:
+  data_input_path: "data/raw/normalized_data.csv"
+  test_size: 0.15
+  val_size: 0.15
+  stratify_column: "RE"
+  features_output_path: "data/processed/X.csv"
