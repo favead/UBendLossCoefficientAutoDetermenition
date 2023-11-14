@@ -25,7 +25,7 @@ name = "PyPI"
 priority = "primary"
 
 [tool.poetry.scripts]
-ubend_pl = "ubend_pl.app:run"
+data_transforms = "ubend_pl.scripts.data_transforms:run_transforms"
 
 [build-system]
 requires = ["poetry-core"]
