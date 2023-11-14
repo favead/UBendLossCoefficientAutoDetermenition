@@ -1,0 +1,11 @@
+normalize_data:
+  data_input_path: "data/raw/test_data.csv"
+  data_output_path: "data/raw/normalized_test_data.csv"
+split_data:
+  data_input_path: "data/raw/normalized_test_data.csv"
+  test_size: 0.1
+  val_size: 0.1
+  target_column: "pt_loss"
+  stratify_column: "RE"
+  targets_output_path: "data/processed/targets_test_data.csv"
+  features_output_path: "data/processed/test_data.csv"
