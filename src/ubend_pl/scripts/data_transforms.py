@@ -20,7 +20,7 @@ def split_data(
     features_output_path: str,
     targets_output_path: str,
     target_column: str,
-    clearml_task: Task,
+    clearml_task: Task | None,
 ) -> None:
     """
     Split data to train/val/test features and targets
@@ -56,7 +56,10 @@ def split_data(
             create_output_path(features_output_path, "test"),
             create_output_path(targets_output_path, "test"),
         )
-        clearml_task.upload_artifact("test_data", artifact_object=test_data)
+        if clearml_task:
+            clearml_task.upload_artifact(
+                "test_data", artifact_object=test_data.describe()
+            )
 
     if val_size > 0:
         data, val_data = train_test_split(
@@ -73,7 +76,10 @@ def split_data(
             create_output_path(targets_output_path, "val"),
         )
 
-        clearml_task.upload_artifact("val_data", artifact_object=val_data)
+        if clearml_task:
+            clearml_task.upload_artifact(
+                "val_data", artifact_object=val_data.describe()
+            )
 
     separate_and_save_data(
         data,
@@ -82,13 +88,16 @@ def split_data(
         create_output_path(targets_output_path, "train"),
     )
 
-    clearml_task.upload_artifact("train_data", artifact_object=data)
+    if clearml_task:
+        clearml_task.upload_artifact(
+            "train_data", artifact_object=data.describe()
+        )
 
     return None
 
 
 def normalize_data(
-    data_input_path: str, data_output_path: str, clearml_task: Task
+    data_input_path: str, data_output_path: str, clearml_task: Task | None
 ) -> None:
     """
     Normalize features
@@ -99,10 +108,35 @@ def normalize_data(
         data[column] = (data[column] - data[column].mean()) / (
             data[column].std() + 1e-6
         )
+    if clearml_task:
+        clearml_task.upload_artifact(
+            name="normalized_data", artifact_object=data.describe()
+        )
+    data.to_csv(data_output_path, index=False)
+    return None
 
-    clearml_task.upload_artifact(
-        name="normalized_data", artifact_object=data.describe()
-    )
+
+def create_features(
+    data_input_path: str, data_output_path: str, clearml_task: Task | None
+) -> None:
+    """
+    Hand crafted features
+    """
+
+    data = pd.read_csv(data_input_path)
+    for column in data.columns:
+        if data[column].dtype != object:
+            data[f"{column}**2"] = data[column].values ** 2
+            data[f"{column}**3"] = data[column].values ** 3
+            data[f"exp_{column}"] = np.exp(data[column].values)
+            data[f"log_{column}"] = np.log(data[column].values + 1e-5)
+            data[f"sin_{column}"] = np.sin(data[column].values)
+            data[f"cos_{column}"] = np.cos(data[column].values)
+
+    if clearml_task:
+        clearml_task.upload_artifact(
+            name="features_data", artifact_object=data.describe()
+        )
     data.to_csv(data_output_path, index=False)
     return None
 
@@ -129,4 +163,5 @@ def run_transforms(cfg: DictConfig) -> None:
     for processing_step_name, params in data_pipeline.items():
         if processing_step := PROCESSING_STEPS.get(processing_step_name, None):
             processing_step(**params, clearml_task=task)
+    task.close()
     return None
