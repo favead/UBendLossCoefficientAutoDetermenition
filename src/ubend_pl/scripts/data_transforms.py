@@ -4,6 +4,8 @@ Data processing and separation
 import os
 from pathlib import Path
 from typing import Dict
+
+from clearml import Task
 import hydra
 import numpy as np
 from omegaconf import DictConfig, OmegaConf
@@ -18,6 +20,7 @@ def split_data(
     features_output_path: str,
     targets_output_path: str,
     target_column: str,
+    clearml_task: Task,
 ) -> None:
     """
     Split data to train/val/test features and targets
@@ -53,6 +56,7 @@ def split_data(
             create_output_path(features_output_path, "test"),
             create_output_path(targets_output_path, "test"),
         )
+        clearml_task.upload_artifact("test_data", artifact_object=test_data)
 
     if val_size > 0:
         data, val_data = train_test_split(
@@ -69,6 +73,8 @@ def split_data(
             create_output_path(targets_output_path, "val"),
         )
 
+        clearml_task.upload_artifact("val_data", artifact_object=val_data)
+
     separate_and_save_data(
         data,
         target_column,
@@ -76,10 +82,14 @@ def split_data(
         create_output_path(targets_output_path, "train"),
     )
 
+    clearml_task.upload_artifact("train_data", artifact_object=data)
+
     return None
 
 
-def normalize_data(data_input_path: str, data_output_path: str) -> None:
+def normalize_data(
+    data_input_path: str, data_output_path: str, clearml_task: Task
+) -> None:
     """
     Normalize features
     """
@@ -90,6 +100,9 @@ def normalize_data(data_input_path: str, data_output_path: str) -> None:
             data[column].std() + 1e-6
         )
 
+    clearml_task.upload_artifact(
+        name="normalized_data", artifact_object=data.describe()
+    )
     data.to_csv(data_output_path, index=False)
     return None
 
@@ -106,8 +119,14 @@ def run_transforms(cfg: DictConfig) -> None:
     """
     OmegaConf.to_yaml(cfg)
     np.random.seed(1234)
-    data_pipeline: Dict[str, dict] = cfg["data"]
+    data_pipeline: Dict[str, dict] = cfg["data"]["pipeline"]
+    data_pipeline_params = cfg["data"]
+    task = Task.init(
+        project_name=data_pipeline_params["project_name"],
+        task_name=data_pipeline_params["task_name"],
+        tags=data_pipeline_params["tags"],
+    )
     for processing_step_name, params in data_pipeline.items():
         if processing_step := PROCESSING_STEPS.get(processing_step_name, None):
-            processing_step(**params)
+            processing_step(**params, clearml_task=task)
     return None
