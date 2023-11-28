@@ -20,7 +20,7 @@ def split_data(
     features_output_path: str,
     targets_output_path: str,
     target_column: str,
-    clearml_task: Task | None,
+    clearml_task: Task | None = None,
 ) -> None:
     """
     Split data to train/val/test features and targets
@@ -97,7 +97,9 @@ def split_data(
 
 
 def normalize_data(
-    data_input_path: str, data_output_path: str, clearml_task: Task | None
+    data_input_path: str,
+    data_output_path: str,
+    clearml_task: Task | None = None,
 ) -> None:
     """
     Normalize features
@@ -117,7 +119,9 @@ def normalize_data(
 
 
 def create_features(
-    data_input_path: str, data_output_path: str, clearml_task: Task | None
+    data_input_path: str,
+    data_output_path: str,
+    clearml_task: Task | None = None,
 ) -> None:
     """
     Hand crafted features
