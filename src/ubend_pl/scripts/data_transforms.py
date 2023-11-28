@@ -3,7 +3,7 @@ Data processing and separation
 """
 import os
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 from clearml import Task
 import hydra
@@ -160,15 +160,18 @@ def run_transforms(cfg: DictConfig) -> None:
     """
     OmegaConf.to_yaml(cfg)
     np.random.seed(1234)
-    data_pipeline: Dict[str, dict] = cfg["data"]["pipeline"]
+    data_pipeline: List[Dict[str, dict]] = cfg["data"]["pipeline"]
     data_pipeline_params = cfg["data"]
     task = Task.init(
         project_name=data_pipeline_params["project_name"],
         task_name=data_pipeline_params["task_name"],
         tags=data_pipeline_params["tags"],
     )
-    for processing_step_name, params in data_pipeline.items():
-        if processing_step := PROCESSING_STEPS.get(processing_step_name, None):
-            processing_step(**params, clearml_task=task)
+    for processing_step in data_pipeline:
+        for processing_step_name, params in processing_step.items():
+            if processing_step := PROCESSING_STEPS.get(
+                processing_step_name, None
+            ):
+                processing_step(**params, clearml_task=task)
     task.close()
     return None
