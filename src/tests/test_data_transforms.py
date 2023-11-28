@@ -82,7 +82,7 @@ def test_feature_engineering() -> None:
         fake_data.to_csv(input_data_path, index=False)
         create_features(input_data_path, output_data_path)
         feature_fake_data = pd.read_csv(output_data_path)
-        assert len(feature_fake_data.columns) == 8
+        assert len(feature_fake_data.columns) == 7
         assert "cos_float_col" in feature_fake_data
         assert "cos_cat_col" not in feature_fake_data
         return None

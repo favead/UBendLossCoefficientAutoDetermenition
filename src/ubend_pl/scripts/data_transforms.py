@@ -133,7 +133,6 @@ def create_features(
             data[f"{column}**2"] = data[column].values ** 2
             data[f"{column}**3"] = data[column].values ** 3
             data[f"exp_{column}"] = np.exp(data[column].values)
-            data[f"log_{column}"] = np.log(data[column].values + 1e-5)
             data[f"sin_{column}"] = np.sin(data[column].values)
             data[f"cos_{column}"] = np.cos(data[column].values)
 
@@ -145,7 +144,11 @@ def create_features(
     return None
 
 
-PROCESSING_STEPS = {"normalize_data": normalize_data, "split_data": split_data}
+PROCESSING_STEPS = {
+    "normalize_data": normalize_data,
+    "split_data": split_data,
+    "create_features": create_features,
+}
 
 
 @hydra.main(

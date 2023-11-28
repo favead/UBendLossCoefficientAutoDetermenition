@@ -12,3 +12,9 @@ pipeline:
     target_column: "pt_loss"
     targets_output_path: "data/processed/y.csv"
     features_output_path: "data/processed/X.csv"
+  create_features:
+    data_input_path: "data/processed/train_X.csv"
+    data_output_path: "data/processed/custom_features_train_X.csv"
+  create_features:
+    data_input_path: "data/processed/val_X.csv"
+    data_output_path: "data/processed/custom_features_train_X.csv"
