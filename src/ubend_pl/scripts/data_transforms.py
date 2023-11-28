@@ -14,7 +14,6 @@ from sklearn.model_selection import train_test_split
 def split_data(
     data_input_path: str,
     test_size: float,
-    stratify_column: str,
     val_size: float,
     features_output_path: str,
     targets_output_path: str,
@@ -27,9 +26,7 @@ def split_data(
 
     def create_output_path(original_path: str, prefix: str) -> str:
         fname = os.path.basename(original_path).split(".")[0]
-        return str(
-            Path(original_path.replace(fname, f"{prefix}_{fname}"))
-        )
+        return str(Path(original_path.replace(fname, f"{prefix}_{fname}")))
 
     def separate_and_save_data(
         data: pd.DataFrame,
