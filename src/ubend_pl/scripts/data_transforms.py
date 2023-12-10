@@ -154,11 +154,10 @@ def create_features(
     return None
 
 
-PROCESSING_STEPS = {
-    "normalize_data": normalize_data,
-    "split_data": split_data,
-    "create_features": create_features,
-}
+class ProcessingStepsRegistry:
+    normalize_data: callable = normalize_data
+    split_data: callable = split_data
+    create_features: callable = create_features
 
 
 @hydra.main(
@@ -179,9 +178,9 @@ def run_transforms(cfg: DictConfig) -> None:
     )
     for processing_step in data_pipeline:
         for processing_step_name, params in processing_step.items():
-            if processing_step := PROCESSING_STEPS.get(
-                processing_step_name, None
-            ):
+            if processing_step := getattr(
+                ProcessingStepsRegistry, processing_step_name, None
+            )(processing_step_name, None):
                 processing_step(**params, clearml_task=task)
     task.close()
     return None
