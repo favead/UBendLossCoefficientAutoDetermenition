@@ -7,9 +7,11 @@ from typing import Dict, List
 
 from clearml import Task
 import hydra
+from joblib import dump, load
 import numpy as np
 from omegaconf import DictConfig, OmegaConf
 import pandas as pd
+from sklearn.discriminant_analysis import StandardScaler
 from sklearn.model_selection import train_test_split
 
 
@@ -99,21 +101,29 @@ def split_data(
 def normalize_data(
     data_input_path: str,
     data_output_path: str,
+    scaler_path: str | None = None,
+    save_scaler_path: str | None = None,
     clearml_task: Task | None = None,
 ) -> None:
     """
     Normalize features
     """
-    data = pd.read_csv(data_input_path)
 
-    for column in data.columns:
-        data[column] = (data[column] - data[column].mean()) / (
-            data[column].std() + 1e-6
-        )
+    data = pd.read_csv(data_input_path)
+    scaler = load(scaler_path) if scaler_path else StandardScaler()
+    normalized_data = (
+        scaler.transform(data) if scaler_path else scaler.fit_transform(data)
+    )
+    data = pd.DataFrame(normalized_data, index=data.index, columns=data.columns)
+
+    if save_scaler_path:
+        dump(scaler, save_scaler_path)
+
     if clearml_task:
         clearml_task.upload_artifact(
             name="normalized_data", artifact_object=data.describe()
         )
+
     data.to_csv(data_output_path, index=False)
     return None
 
