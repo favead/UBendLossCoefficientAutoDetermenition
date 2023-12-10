@@ -2,9 +2,6 @@ project_name: "BachelorDiploma"
 task_name: "base_data_transform"
 tags: ["normalize", "split"]
 pipeline:
-- normalize_data:
-    data_input_path: "data/raw/ubend.pressureloss.csv"
-    data_output_path: "data/raw/normalized_data.csv"
 - split_data:
     data_input_path: "data/raw/normalized_data.csv"
     test_size: 0.15
@@ -18,3 +15,18 @@ pipeline:
 - create_features:
     data_input_path: "data/processed/val_X.csv"
     data_output_path: "data/processed/custom_features_val_X.csv"
+- create_features:
+    data_input_path: "data/processed/test_X.csv"
+    data_output_path: "data/processed/custom_features_test_X.csv"
+- normalize_data:
+    data_input_path: "data/processed/custom_features_train_X.csv"
+    data_output_path: "data/processed/normalized_custom_features_train_X.csv"
+    save_scaler_path: "models/std_scaler.joblib"
+- normalize_data:
+    data_input_path: "data/processed/custom_features_val_X.csv"
+    data_output_path: "data/processed/normalized_custom_features_val_X.csv"
+    scaler_path: "models/std_scaler.joblib"
+- normalize_data:
+    data_input_path: "data/processed/custom_features_test_X.csv"
+    data_output_path: "data/processed/normalized_custom_features_test_X.csv"
+    scaler_path: "models/std_scaler.joblib"
