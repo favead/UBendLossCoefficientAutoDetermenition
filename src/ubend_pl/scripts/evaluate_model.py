@@ -24,23 +24,6 @@ import torch
 log = logging.getLogger(__name__)
 
 
-def save_metric_figure(title: str, save_path: str, metric: float) -> None:
-    """
-    Plot scalar metric to bar and save to artifacts
-    """
-    plt.xlim(left=-0.3, right=0.3)
-    plt.bar_label(
-        plt.bar([""], metric, width=0.1, color="green"),
-        labels=[metric],
-        label_type="center",
-        color="white",
-        size=16,
-    )
-    plt.title(title, size=24)
-    plt.savefig(save_path)
-    return None
-
-
 def save_hist_figure(
     gts: np.ndarray, preds: np.ndarray, save_path: str
 ) -> None:
@@ -51,6 +34,7 @@ def save_hist_figure(
     plt.hist(residuals, size="green")
     plt.title("Residuals", size=24)
     plt.savefig(save_path)
+    plt.close()
     return None
 
 
@@ -65,6 +49,7 @@ def save_scatter_figure(
     plt.xlabel("Ground Truth's")
     plt.title("Pair plot", size=24)
     plt.savefig(save_path)
+    plt.close()
     return None
 
 
@@ -96,39 +81,32 @@ def evaluate_model(
     r2 = r2_score(gts, preds)
 
     try:
-        os.chdir(f"artifacts/{artifact_name}")
-    except OSError:
+        os.makedirs(f"artifacts/{artifact_name}")
+    except FileExistsError:
         log.info("Directory already exist, rewriting metrics!")
 
-    logger = clearml_task.get_logger() if clearml_task else None
+    clearml_logger = clearml_task.get_logger() if clearml_task else None
 
     for title, metric_value in zip(
         ["MAPE", "MAE", "MSE", "R2", "Inference_Time"],
         [mape, mae, mse, r2, inference_time],
     ):
-        save_metric_figure(
-            title, f"artifacts/{artifact_name}/{title}.png", metric_value
-        )
+        log.info(f"{title} = {metric_value}")
 
-        if logger:
-            logger.report_media(
-                title,
-                iteration=0,
-                local_path=f"artifacts/{artifact_name}/{title}.png",
-                file_extension="png",
-            )
+        if clearml_logger:
+            clearml_logger.report_single_value(title, metric_value)
 
     save_hist_figure(gts, preds, f"artifacts/{artifact_name}/Residuals.png")
     save_scatter_figure(gts, preds, f"artifacts/{artifact_name}/Pair_Plot.png")
 
-    if logger:
-        logger.report_media(
+    if clearml_logger:
+        clearml_logger.report_media(
             "Residuals",
             iteration=0,
             local_path=f"artifacts/{artifact_name}/Residuals.png",
             file_extension="png",
         )
-        logger.report_media(
+        clearml_logger.report_media(
             "Pair_Plot",
             iteration=0,
             local_path=f"artifacts/{artifact_name}/Pair_Plot.png",
