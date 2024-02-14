@@ -14,7 +14,7 @@ seaborn = "^0.12.2"
 hydra-core = "^1.3.2"
 pytest = "^7.4.0"
 torch = {version = "*", source = "torch_cpu"}
-clearml = "^1.13.2"
+psutil = "^5.9.8"
 
 [[tool.poetry.source]]
 name = "torch_cpu"
@@ -26,7 +26,7 @@ name = "PyPI"
 priority = "primary"
 
 [tool.poetry.scripts]
-data_transforms = "ubend_pl.scripts.data_transforms:run_transforms"
+make_dataset = "ubend_pl.data.make_dataset:make_dataset"
 
 [build-system]
 requires = ["poetry-core"]
