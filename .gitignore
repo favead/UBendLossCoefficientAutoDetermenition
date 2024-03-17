@@ -100,6 +100,3 @@ poetry.lock
 
 # Hydra outputs
 outputs/
-
-# Artifacts
-artifacts/*
