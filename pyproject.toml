@@ -16,6 +16,10 @@ pytest = "^7.4.0"
 torch = {version = "*", source = "torch_cpu"}
 psutil = "^5.9.8"
 modal = "^0.57.41"
+scikit-activeml = "^0.4.1"
+modal-python = "^0.4.2.1"
+catboost = "^1.2.3"
+nbformat = "^5.10.2"
 
 [[tool.poetry.source]]
 name = "torch_cpu"
