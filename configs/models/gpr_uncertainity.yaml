@@ -1,0 +1,11 @@
+c_min: 1.0e-9
+c_max: 1.0e+9
+nu: 1.8
+ck_const: 1.0
+ck_min: 1.0e-9
+ck_max: 1.0e+9
+whtk_constant: 1.0
+whtk_min: 1.0e-9
+whtk_max: 1.0e+9
+n_restarts_optimizer: 5
+n_features: 7

@@ -32,6 +32,7 @@ priority = "primary"
 
 [tool.poetry.scripts]
 make_dataset = "ubend_pl.data.make_dataset:make_dataset"
+train_gpr_uncertainity = "ubend_pl.models.train_gpr_uncertainity:run_train_gpr_uncertainity"
 
 [build-system]
 requires = ["poetry-core"]

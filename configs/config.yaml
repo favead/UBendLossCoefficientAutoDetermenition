@@ -1,2 +1,4 @@
 defaults:
 - data: base
+- models: gpr_uncertainity
+- train: gpr_uncertainity
