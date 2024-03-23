@@ -8,6 +8,7 @@ import warnings
 import hydra
 from joblib import dump
 from modAL import ActiveLearner
+from modAL.disagreement import max_std_sampling
 import numpy as np
 from omegaconf import DictConfig, OmegaConf
 import pandas as pd
@@ -20,7 +21,7 @@ from sklearn.metrics import (
 )
 
 from ubend_pl.configs import GPrTrainConfig, GPrConfig
-from ubend_pl.models.model_list import GP_regression, GP_regression_std
+from ubend_pl.models.model_list import GP_regression
 
 
 log = logging.getLogger("main")
@@ -109,7 +110,7 @@ def train_gpr_uncertainity(
 
     al_gpr = ActiveLearner(
         estimator=gpr,
-        query_strategy=GP_regression_std,
+        query_strategy=max_std_sampling,
         X_training=initial_X,
         y_training=initial_y,
     )

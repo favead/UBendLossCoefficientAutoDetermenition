@@ -8,6 +8,7 @@ import warnings
 import hydra
 from joblib import dump
 from modAL import ActiveLearner, CommitteeRegressor
+from modAL.disagreement import max_std_sampling
 import numpy as np
 from omegaconf import DictConfig, OmegaConf
 import pandas as pd
@@ -20,10 +21,7 @@ from sklearn.metrics import (
 )
 
 from ubend_pl.configs import GPrTrainConfig, GPrQBCConfig
-from ubend_pl.models.model_list import (
-    GP_regression_committee,
-    GP_regression_std,
-)
+from ubend_pl.models.model_list import GP_regression_committee
 
 
 log = logging.getLogger("main")
@@ -114,7 +112,7 @@ def train_gpr_qbc(
 
     committee = CommitteeRegressor(
         learner_list=learner_list,
-        query_strategy=GP_regression_std,
+        query_strategy=max_std_sampling,
     )
 
     warnings.filterwarnings("ignore")

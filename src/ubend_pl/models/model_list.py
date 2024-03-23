@@ -1,7 +1,6 @@
 from collections import OrderedDict
 from typing import Union
 
-import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import (
     ConstantKernel as C,
@@ -78,9 +77,3 @@ def GP_regression_committee(
     for regressor_params in regressors_params:
         gp_regressors.append(GP_regression(**regressor_params))
     return gp_regressors
-
-
-def GP_regression_std(
-    GP_regression: GaussianProcessRegressor, X: np.ndarray
-) -> np.ndarray:
-    return np.argmax(GP_regression.predict(X, return_std=True))
