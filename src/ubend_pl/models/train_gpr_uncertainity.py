@@ -19,7 +19,7 @@ from sklearn.metrics import (
     mean_absolute_error,
 )
 
-from ubend_pl.configs import GPrUncertainityTrainConfig, GPrUncertainityConfig
+from ubend_pl.configs import GPrTrainConfig, GPrConfig
 from ubend_pl.models.model_list import GP_regression, GP_regression_std
 
 
@@ -31,35 +31,33 @@ log = logging.getLogger("main")
 )
 def run_train_gpr_uncertainity(cfg: DictConfig) -> None:
     OmegaConf.to_yaml(cfg)
-    gpr_uncertainity_config = GPrUncertainityConfig(**cfg.get("models"))
-    gpr_uncertainity_train_config = GPrUncertainityTrainConfig(
-        **cfg.get("train")
-    )
+    gpr_config = GPrConfig(**cfg.get("models"))
+    gpr_train_config = GPrTrainConfig(**cfg.get("train"))
 
     gpr = GP_regression(
-        n_features=gpr_uncertainity_config.n_features,
-        c_min=gpr_uncertainity_config.c_min,
-        c_max=gpr_uncertainity_config.c_max,
-        nu=gpr_uncertainity_config.nu,
-        ck_const=gpr_uncertainity_config.ck_const,
-        ck_min=gpr_uncertainity_config.ck_min,
-        ck_max=gpr_uncertainity_config.ck_max,
-        whtk_constant=gpr_uncertainity_config.whtk_constant,
-        whtk_min=gpr_uncertainity_config.whtk_min,
-        whtk_max=gpr_uncertainity_config.whtk_max,
-        n_restarts_optimizer=gpr_uncertainity_config.n_restarts_optimizer,
+        n_features=gpr_config.n_features,
+        c_min=gpr_config.c_min,
+        c_max=gpr_config.c_max,
+        nu=gpr_config.nu,
+        ck_const=gpr_config.ck_const,
+        ck_min=gpr_config.ck_min,
+        ck_max=gpr_config.ck_max,
+        whtk_constant=gpr_config.whtk_constant,
+        whtk_min=gpr_config.whtk_min,
+        whtk_max=gpr_config.whtk_max,
+        n_restarts_optimizer=gpr_config.n_restarts_optimizer,
     )
 
-    if os.path.exists(gpr_uncertainity_train_config.artifact_dir):
-        shutil.rmtree(gpr_uncertainity_train_config.artifact_dir)
-        shutil.rmtree(gpr_uncertainity_train_config.model_dir)
+    if os.path.exists(gpr_train_config.artifact_dir):
+        shutil.rmtree(gpr_train_config.artifact_dir)
+        shutil.rmtree(gpr_train_config.model_dir)
         log.warning("Модель уже обучена. Перезаписываю...")
 
-    os.makedirs(gpr_uncertainity_train_config.artifact_dir)
-    os.makedirs(gpr_uncertainity_train_config.model_dir)
+    os.makedirs(gpr_train_config.artifact_dir)
+    os.makedirs(gpr_train_config.model_dir)
 
-    train_data = pd.read_csv(gpr_uncertainity_train_config.train_data_path)
-    val_data = pd.read_csv(gpr_uncertainity_train_config.val_data_path)
+    train_data = pd.read_csv(gpr_train_config.train_data_path)
+    val_data = pd.read_csv(gpr_train_config.val_data_path)
     train_X, train_y = train_data.drop("pt_loss", axis=1), train_data["pt_loss"]
     val_X, val_y = val_data.drop("pt_loss", axis=1), val_data["pt_loss"]
     train_X, val_X = train_X.values, val_X.values
@@ -71,17 +69,15 @@ def run_train_gpr_uncertainity(cfg: DictConfig) -> None:
         train_y,
         val_X,
         val_y,
-        gpr_uncertainity_train_config.n_start_points,
-        gpr_uncertainity_train_config.n_query,
-        gpr_uncertainity_train_config.estimation_step,
+        gpr_train_config.n_start_points,
+        gpr_train_config.n_query,
+        gpr_train_config.estimation_step,
     )
 
     estimation_info_path = str(
-        Path(gpr_uncertainity_train_config.artifact_dir, "estimation_info.csv")
+        Path(gpr_train_config.artifact_dir, "estimation_info.csv")
     )
-    al_gpr_path = str(
-        Path(gpr_uncertainity_train_config.model_dir, "al_gpr.joblib")
-    )
+    al_gpr_path = str(Path(gpr_train_config.model_dir, "al_gpr.joblib"))
     estimation_info.to_csv(estimation_info_path, index=False)
     dump(al_gpr, al_gpr_path)
     return None
