@@ -1,0 +1,7 @@
+artifact_dir: artifacts/gpr_qbc
+model_dir: models/gpr_qbc
+train_data_path: data/processed/norm_train.csv
+val_data_path: data/processed/norm_val.csv
+n_start_points: 10
+n_query: 50
+estimation_step: 5

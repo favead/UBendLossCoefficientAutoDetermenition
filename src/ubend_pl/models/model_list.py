@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from typing import Union
 
 import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -68,6 +69,15 @@ def GP_regression(
         normalize_y=False,
     )
     return gp
+
+
+def GP_regression_committee(
+    regressors_params: list[dict[str, Union[int, float]]]
+) -> list[GaussianProcessRegressor]:
+    gp_regressors = []
+    for regressor_params in regressors_params:
+        gp_regressors.append(GP_regression(**regressor_params))
+    return gp_regressors
 
 
 def GP_regression_std(

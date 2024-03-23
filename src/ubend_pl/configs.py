@@ -18,7 +18,7 @@ class NnTrainConfig:
 
 
 @dataclass
-class GPrUncertainityConfig:
+class GPrConfig:
     n_features: int
     c_min: float
     c_max: float
@@ -33,7 +33,7 @@ class GPrUncertainityConfig:
 
 
 @dataclass
-class GPrUncertainityTrainConfig:
+class GPrTrainConfig:
     artifact_dir: str
     model_dir: str
     train_data_path: str
@@ -41,3 +41,8 @@ class GPrUncertainityTrainConfig:
     n_start_points: int
     n_query: int
     estimation_step: int
+
+
+@dataclass
+class GPrQBCConfig:
+    regressors_params: list[GPrConfig]
