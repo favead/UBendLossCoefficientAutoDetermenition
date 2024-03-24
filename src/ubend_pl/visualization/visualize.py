@@ -14,7 +14,9 @@ def visualize(cfg: DictConfig) -> None:
     visualization_config = VisualizationConfig(cfg.get("visualization"))
 
     for artifact_folder in glob.glob(visualization_config.artifact_dir):
-        
+        pass
+
+    return None
 
 
 if __name__ == "__main__":
