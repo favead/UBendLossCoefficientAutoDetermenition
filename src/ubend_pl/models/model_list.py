@@ -132,3 +132,11 @@ def GS_xy(
     d_nXY = d_XY[np.arange(d_XY.shape[0]), np.argmin(d_XY, axis=1)]
     index = np.argmax(d_nXY)
     return index, X[index]
+
+
+def random_strategy(
+    regressor: Union[ActiveLearner, CommitteeRegressor],
+    X: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    index = np.random.choice(X.shape[0], 1)
+    return index, X[index]

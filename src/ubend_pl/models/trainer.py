@@ -19,6 +19,7 @@ from ubend_pl.models.model_list import (
     GS_x,
     GS_xy,
     GS_y,
+    random_strategy,
 )
 
 
@@ -127,6 +128,8 @@ class GPRTrainer:
             self.query_strategy = GS_y
         elif self.query_strategy_type == "gs_xy":
             self.query_strategy = GS_xy
+        elif self.query_strategy_type == "random":
+            self.query_strategy = random_strategy
         return None
 
     def train(
