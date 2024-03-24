@@ -3,6 +3,6 @@ model_dir: models/gpr_uncertainity
 train_data_path: data/processed/norm_train.csv
 val_data_path: data/processed/norm_val.csv
 n_start_points: 10
-n_query: 75
-estimation_step: 5
+n_query: 100
+estimation_step: 1
 query_strategy_type: uncertainity
