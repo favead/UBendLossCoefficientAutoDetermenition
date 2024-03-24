@@ -5,3 +5,4 @@ val_data_path: data/processed/norm_val.csv
 n_start_points: 10
 n_query: 75
 estimation_step: 5
+query_strategy_type: uncertainity

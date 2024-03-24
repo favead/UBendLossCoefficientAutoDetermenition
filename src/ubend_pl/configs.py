@@ -38,6 +38,7 @@ class GPrTrainConfig:
     model_dir: str
     train_data_path: str
     val_data_path: str
+    query_strategy_type: str
     n_start_points: int
     n_query: int
     estimation_step: int

@@ -8,7 +8,7 @@ from joblib import dump
 from omegaconf import DictConfig, OmegaConf
 import pandas as pd
 
-from ubend_pl.configs import GPrTrainConfig, GPrQBCConfig
+from ubend_pl.configs import GPrTrainConfig, GPrConfig
 from ubend_pl.models.trainer import GPRTrainer
 
 
@@ -18,9 +18,9 @@ log = logging.getLogger("main")
 @hydra.main(
     version_base=None, config_name="config", config_path="../../../configs"
 )
-def run_train_gpr_qbc(cfg: DictConfig) -> None:
+def run_train_gpr(cfg: DictConfig) -> None:
     OmegaConf.to_yaml(cfg)
-    gpr_qbc_config = GPrQBCConfig(**cfg.get("models"))
+    gpr_config = GPrConfig(**cfg.get("models"))
     gpr_train_config = GPrTrainConfig(**cfg.get("train"))
 
     if os.path.exists(gpr_train_config.artifact_dir):
@@ -39,7 +39,7 @@ def run_train_gpr_qbc(cfg: DictConfig) -> None:
     train_y, val_y = train_y.values, val_y.values
 
     trainer = GPRTrainer(
-        model_type="CommitteeRegressor",
+        model_type="ActiveLearner",
         query_strategy_type=gpr_train_config.query_strategy_type,
         n_start_points=gpr_train_config.n_start_points,
         n_query=gpr_train_config.n_query,
@@ -47,22 +47,18 @@ def run_train_gpr_qbc(cfg: DictConfig) -> None:
         log=log,
     )
 
-    trainer.initialize(gpr_qbc_config)
+    trainer.initialize(gpr_config)
 
-    gpr_committee, estimation_info = trainer.train(
-        train_X, train_y, val_X, val_y
-    )
+    al_gpr, estimation_info = trainer.train(train_X, train_y, val_X, val_y)
 
     estimation_info_path = str(
         Path(gpr_train_config.artifact_dir, "estimation_info.csv")
     )
-    gpr_committee_path = str(
-        Path(gpr_train_config.model_dir, "gpr_committee.joblib")
-    )
+    al_gpr_path = str(Path(gpr_train_config.model_dir, "al_gpr.joblib"))
     estimation_info.to_csv(estimation_info_path, index=False)
-    dump(gpr_committee, gpr_committee_path)
+    dump(al_gpr, al_gpr_path)
     return None
 
 
 if __name__ == "__main__":
-    run_train_gpr_qbc()
+    run_train_gpr()
