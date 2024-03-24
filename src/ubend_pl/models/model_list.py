@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from typing import Union
 
+import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import (
     ConstantKernel as C,
@@ -77,3 +78,45 @@ def GP_regression_committee(
     for regressor_params in regressors_params:
         gp_regressors.append(GP_regression(**regressor_params))
     return gp_regressors
+
+
+def GS_x(labeled: np.ndarray, pool: np.ndarray) -> np.ndarray:
+    distances = -2 * pool @ labeled.T
+    distances = np.sum((pool**2.0), axis=1, keepdims=True) + distances
+    distances = distances + np.sum((labeled**2.0), axis=1, keepdims=True).T
+    distances_nx = distances[
+        np.arange(distances.shape[0]), np.argmin(distances, axis=1)
+    ]
+    index = np.argmax(distances_nx)
+    return index
+
+
+def GS_y(labels: np.ndarray, pool_preds: np.ndarray) -> np.ndarray:
+    distances = -2 * pool_preds @ labels.T
+    distances = np.sum((pool_preds**2.0), axis=1, keepdims=True) + distances
+    distances = distances + np.sum((labels**2.0), axis=1, keepdims=True).T
+    distances_nx = distances[
+        np.arange(distances.shape[0]), np.argmin(distances, axis=1)
+    ]
+    index = np.argmax(distances_nx)
+    return index
+
+
+def GS_xy(
+    labeled: np.ndarray,
+    pool: np.ndarray,
+    labels: np.ndarray,
+    pool_preds: np.ndarray,
+) -> np.ndarray:
+    d_X = -2 * pool @ labeled.T
+    d_X = np.sum((pool**2.0), axis=1, keepdims=True) + d_X
+    d_X = d_X + np.sum((labeled**2.0), axis=1, keepdims=True).T
+
+    d_Y = -2 * pool_preds @ labels.T
+    d_Y = np.sum((pool_preds**2.0), axis=1, keepdims=True) + d_Y
+    d_Y = d_Y + np.sum((labels**2.0), axis=1, keepdims=True).T
+
+    d_XY = d_X * d_Y
+    d_nXY = d_XY[np.arange(d_XY.shape[0]), np.argmin(d_XY, axis=1)]
+    index = np.argmax(d_nXY)
+    return index
