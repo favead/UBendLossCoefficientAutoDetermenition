@@ -47,3 +47,9 @@ class GPrTrainConfig:
 @dataclass
 class GPrQBCConfig:
     regressors_params: list[GPrConfig]
+
+
+@dataclass
+class VisualizationConfig:
+    artifact_dir: str
+    estimation_info_filename: str
