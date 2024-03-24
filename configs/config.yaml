@@ -1,4 +1,4 @@
 defaults:
 - data: base
-- models: gpr_uncertainity
+- models: gpr_solo
 - train: gpr_uncertainity
