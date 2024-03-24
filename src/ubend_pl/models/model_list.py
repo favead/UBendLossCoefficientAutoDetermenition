@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from typing import Union
 
+from modAL import ActiveLearner, CommitteeRegressor
 import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import (
@@ -80,43 +81,54 @@ def GP_regression_committee(
     return gp_regressors
 
 
-def GS_x(labeled: np.ndarray, pool: np.ndarray) -> np.ndarray:
-    distances = -2 * pool @ labeled.T
-    distances = np.sum((pool**2.0), axis=1, keepdims=True) + distances
+def GS_x(
+    regressor: Union[ActiveLearner, CommitteeRegressor],
+    X: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    labeled = regressor.X_training
+    distances = -2 * X @ labeled.T
+    distances = np.sum((X**2.0), axis=1, keepdims=True) + distances
     distances = distances + np.sum((labeled**2.0), axis=1, keepdims=True).T
     distances_nx = distances[
         np.arange(distances.shape[0]), np.argmin(distances, axis=1)
     ]
     index = np.argmax(distances_nx)
-    return index
+    return index, X[index]
 
 
-def GS_y(labels: np.ndarray, pool_preds: np.ndarray) -> np.ndarray:
-    distances = -2 * pool_preds @ labels.T
-    distances = np.sum((pool_preds**2.0), axis=1, keepdims=True) + distances
+def GS_y(
+    regressor: Union[ActiveLearner, CommitteeRegressor],
+    X: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    labels = regressor.y_training
+    preds = regressor.estimator.predict(X).reshape(-1, 1)
+    distances = -2 * preds @ labels.T
+    distances = np.sum((preds**2.0), axis=1, keepdims=True) + distances
     distances = distances + np.sum((labels**2.0), axis=1, keepdims=True).T
     distances_nx = distances[
         np.arange(distances.shape[0]), np.argmin(distances, axis=1)
     ]
     index = np.argmax(distances_nx)
-    return index
+    return index, X[index]
 
 
 def GS_xy(
-    labeled: np.ndarray,
-    pool: np.ndarray,
-    labels: np.ndarray,
-    pool_preds: np.ndarray,
+    regressor: Union[ActiveLearner, CommitteeRegressor],
+    X: np.ndarray,
 ) -> np.ndarray:
-    d_X = -2 * pool @ labeled.T
-    d_X = np.sum((pool**2.0), axis=1, keepdims=True) + d_X
+    labeled = regressor.X_training
+    labels = regressor.y_training
+    preds = regressor.estimator.predict(X).reshape(-1, 1)
+
+    d_X = -2 * X @ labeled.T
+    d_X = np.sum((X**2.0), axis=1, keepdims=True) + d_X
     d_X = d_X + np.sum((labeled**2.0), axis=1, keepdims=True).T
 
-    d_Y = -2 * pool_preds @ labels.T
-    d_Y = np.sum((pool_preds**2.0), axis=1, keepdims=True) + d_Y
+    d_Y = -2 * preds @ labels.T
+    d_Y = np.sum((preds**2.0), axis=1, keepdims=True) + d_Y
     d_Y = d_Y + np.sum((labels**2.0), axis=1, keepdims=True).T
 
     d_XY = d_X * d_Y
     d_nXY = d_XY[np.arange(d_XY.shape[0]), np.argmin(d_XY, axis=1)]
     index = np.argmax(d_nXY)
-    return index
+    return index, X[index]
