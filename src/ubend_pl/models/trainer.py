@@ -2,62 +2,42 @@ import logging
 from typing import Union
 import warnings
 from modAL import ActiveLearner, CommitteeRegressor
-from modAL.disagreement import max_std_sampling
 import numpy as np
 import pandas as pd
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.metrics import (
     r2_score,
     mean_squared_error,
     mean_absolute_percentage_error,
     mean_absolute_error,
 )
-
-from ubend_pl.configs import GPrConfig, GPrQBCConfig
-from ubend_pl.models.model_list import (
-    GP_regression,
-    GP_regression_committee,
-    GS_x,
-    GS_xy,
-    GS_y,
-    random_strategy,
-)
+from torch import nn
 
 
-class GPRTrainer:
+class ALTrainer:
     def __init__(
         self,
+        model: Union[
+            GaussianProcessRegressor,
+            list[GaussianProcessRegressor],
+            GradientBoostingRegressor,
+            nn.Module,
+        ],
+        query_strategy: callable,
         model_type: str,
-        query_strategy_type: str,
         n_start_points: int,
         n_query: int,
         estimation_step: int,
         log: logging.Logger,
     ) -> None:
         self.model_type = model_type
-        self.query_strategy_type = query_strategy_type
         self.n_start_points = n_start_points
         self.n_query = n_query
         self.estimation_step = estimation_step
         self.log = log
-
-    def _initialize_gpr(self, gpr_config: GPrConfig) -> None:
-        self.model = GP_regression(
-            n_features=gpr_config.n_features,
-            c_min=gpr_config.c_min,
-            c_max=gpr_config.c_max,
-            nu=gpr_config.nu,
-            ck_const=gpr_config.ck_const,
-            ck_min=gpr_config.ck_min,
-            ck_max=gpr_config.ck_max,
-            whtk_constant=gpr_config.whtk_constant,
-            whtk_min=gpr_config.whtk_min,
-            whtk_max=gpr_config.whtk_max,
-            n_restarts_optimizer=gpr_config.n_restarts_optimizer,
-        )
-        return None
-
-    def _initialize_gpr_list(self, gpr_qbc_config: GPrQBCConfig) -> None:
-        self.model = GP_regression_committee(gpr_qbc_config.regressors_params)
+        self.model = model
+        self.query_strategy = query_strategy
 
     def _create_al_model(
         self, train_X: np.ndarray, train_y: np.ndarray, n_start_points: int
@@ -65,7 +45,7 @@ class GPRTrainer:
         if self.model_type == "ActiveLearner":
             self._create_solo_al_model(train_X, train_y, n_start_points)
         elif self.model_type == "CommitteeRegressor":
-            self._create_qbc_model()
+            self._create_qbc_model(train_X, train_y, n_start_points)
 
     def _create_solo_al_model(
         self, train_X: np.ndarray, train_y: np.ndarray, n_start_points: int
@@ -112,24 +92,6 @@ class GPRTrainer:
             learner_list=learner_list,
             query_strategy=self.query_strategy,
         )
-        return None
-
-    def initialize(self, params: Union[GPrConfig, GPrQBCConfig]) -> None:
-        if self.model_type == "ActiveLearner":
-            self._initialize_gpr(params)
-        elif self.model_type == "CommitteeRegressor":
-            self._initialize_gpr_list(**params)
-
-        if self.query_strategy_type == "uncertainity":
-            self.query_strategy = max_std_sampling
-        elif self.query_strategy_type == "gs_x":
-            self.query_strategy = GS_x
-        elif self.query_strategy_type == "gs_y":
-            self.query_strategy = GS_y
-        elif self.query_strategy_type == "gs_xy":
-            self.query_strategy = GS_xy
-        elif self.query_strategy_type == "random":
-            self.query_strategy = random_strategy
         return None
 
     def train(
