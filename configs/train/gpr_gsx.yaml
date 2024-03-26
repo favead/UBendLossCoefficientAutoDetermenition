@@ -6,3 +6,5 @@ n_start_points: 10
 n_query: 100
 estimation_step: 1
 query_strategy_type: gs_x
+model_type: ActiveLearner
+model_name: GaussianProcessRegressor
