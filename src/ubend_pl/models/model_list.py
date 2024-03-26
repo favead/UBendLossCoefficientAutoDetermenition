@@ -2,7 +2,9 @@ from collections import OrderedDict
 from typing import Union
 
 from modAL import ActiveLearner, CommitteeRegressor
+from modAL.disagreement import max_std_sampling
 import numpy as np
+from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import (
     ConstantKernel as C,
@@ -140,3 +142,32 @@ def random_strategy(
 ) -> tuple[np.ndarray, np.ndarray]:
     index = np.random.choice(X.shape[0], 1)
     return index, X[index]
+
+
+def create_model(model_name: str, model_config: dict[str, any]) -> Union[
+    GaussianProcessRegressor,
+    list[GaussianProcessRegressor],
+    GradientBoostingRegressor,
+    nn.Module,
+]:
+    if model_name == "GaussianProcessRegressor":
+        return GP_regression(**model_config)
+    elif model_name == "GaussianProcessRegressorQBC":
+        return GP_regression_committee(**model_config)
+    elif model_name == "GBDT":
+        return GradientBoostingRegressor(**model_config)
+    elif model_name == "PtLossRegressor":
+        return PtLossRegressor(**model_config)
+
+
+def get_query_strategy(query_strategy_type: str) -> callable:
+    if query_strategy_type == "uncertainity":
+        return max_std_sampling
+    elif query_strategy_type == "gs_x":
+        return GS_x
+    elif query_strategy_type == "gs_y":
+        return GS_y
+    elif query_strategy_type == "gs_xy":
+        return GS_xy
+    elif query_strategy_type == "random":
+        return random_strategy
