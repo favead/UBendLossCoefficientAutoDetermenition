@@ -8,8 +8,9 @@ from joblib import dump
 from omegaconf import DictConfig, OmegaConf
 import pandas as pd
 
-from ubend_pl.configs import GPrTrainConfig, GPrConfig
-from ubend_pl.models.trainer import GPRTrainer
+from ubend_pl.configs import ALTrainConfig
+from ubend_pl.models.model_list import create_model, get_query_strategy
+from ubend_pl.models.trainer import ALTrainer
 
 
 log = logging.getLogger("main")
@@ -20,8 +21,7 @@ log = logging.getLogger("main")
 )
 def run_train_gpr(cfg: DictConfig) -> None:
     OmegaConf.to_yaml(cfg)
-    gpr_config = GPrConfig(**cfg.get("models"))
-    gpr_train_config = GPrTrainConfig(**cfg.get("train"))
+    gpr_train_config = ALTrainConfig(**cfg.get("train"))
 
     if os.path.exists(gpr_train_config.artifact_dir):
         shutil.rmtree(gpr_train_config.artifact_dir)
@@ -38,16 +38,20 @@ def run_train_gpr(cfg: DictConfig) -> None:
     train_X, val_X = train_X.values, val_X.values
     train_y, val_y = train_y.values, val_y.values
 
-    trainer = GPRTrainer(
-        model_type="ActiveLearner",
-        query_strategy_type=gpr_train_config.query_strategy_type,
+    model = create_model(
+        model_name=gpr_train_config.model_name, model_config=cfg.get("models")
+    )
+    query_strategy = get_query_strategy(gpr_train_config.query_strategy_type)
+
+    trainer = ALTrainer(
+        model=model,
+        query_strategy=query_strategy,
+        model_type=gpr_train_config.model_type,
         n_start_points=gpr_train_config.n_start_points,
         n_query=gpr_train_config.n_query,
         estimation_step=gpr_train_config.estimation_step,
         log=log,
     )
-
-    trainer.initialize(gpr_config)
 
     al_gpr, estimation_info = trainer.train(train_X, train_y, val_X, val_y)
 
